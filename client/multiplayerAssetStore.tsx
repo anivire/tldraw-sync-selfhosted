@@ -9,7 +9,7 @@ export const multiplayerAssetStore: TLAssetStore = {
 		const objectName = `${id}-${file.name}`.replace(/[^a-zA-Z0-9.]/g, '-')
 
 		// ...POST it to out worker to upload it...
-		const response = await fetch(`http://${window.location.hostname}:3000/api/uploads/${objectName}`, {
+		const response = await fetch(`${window.location.origin}/api/uploads/${objectName}`, {
 			method: 'POST',
 			body: file,
 		})
@@ -19,7 +19,7 @@ export const multiplayerAssetStore: TLAssetStore = {
 		}
 
 		// ...and return the URL to be stored with the asset record.
-		return { src: `http://${window.location.hostname}:3000/api/uploads/${objectName}` }
+		return { src: `${window.location.origin}/api/uploads/${objectName}` }
 	},
 
 	// to retrieve an asset, we can just use the same URL. you could customize this to add extra

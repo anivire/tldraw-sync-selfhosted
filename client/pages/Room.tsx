@@ -11,7 +11,7 @@ export function Room() {
 	// Create a store connected to multiplayer.
 	const store = useSync({
 		// We need to know the websockets URI...
-		uri: `http://${window.location.hostname}:3000/api/connect/${roomId}`,
+		uri: `${window.location.origin}/api/connect/${roomId}`,
 		// ...and how to handle static assets like images & videos
 		assets: multiplayerAssetStore,
 	})

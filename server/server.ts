@@ -54,7 +54,8 @@ async function getRoom(roomId: string): Promise<TLSocketRoom<any, void>> {
 			initialSnapshot = JSON.parse(body)
 		}
 	} catch (e) {
-		console.log('Room not found in S3, creating new:', e)
+		// Room not found in S3, will create new room
+		console.log(`Room ${roomId} not found in S3, creating new room`)
 	}
 
 	const room = new TLSocketRoom<any, void>({
