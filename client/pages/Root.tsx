@@ -35,8 +35,8 @@ export function Root() {
 	}
 
 	useEffect(() => {
-		const whiteboardId = `${part1}${part2}${part3}`
-		if (whiteboardId.length === 9) {
+		const whiteboardId = `${part1}-${part2}-${part3}`
+		if (whiteboardId.length === 11) { // 9 chars + 2 dashes
 			setIsChecking(true)
 			setWhiteboardExists(false)
 			if (checkTimeoutRef.current) {
