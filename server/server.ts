@@ -32,11 +32,27 @@ const s3 = new S3Client({
 	forcePathStyle: true,
 })
 
-// Rooms map
+// Rooms map with LRU-style cleanup
 const rooms = new Map<string, TLSocketRoom<any, void>>()
+const roomAccessTimes = new Map<string, number>()
+
+// Clean up inactive rooms after 1 hour
+setInterval(() => {
+	const now = Date.now()
+	const cutoff = now - (60 * 60 * 1000) // 1 hour
+	for (const [roomId, lastAccess] of roomAccessTimes) {
+		if (lastAccess < cutoff && rooms.has(roomId)) {
+			rooms.delete(roomId)
+			roomAccessTimes.delete(roomId)
+			console.log(`Cleaned up inactive room: ${roomId}`)
+		}
+	}
+}, 10 * 60 * 1000) // Check every 10 minutes
 
 // Get or create room
 async function getRoom(roomId: string): Promise<TLSocketRoom<any, void>> {
+	roomAccessTimes.set(roomId, Date.now())
+	
 	if (rooms.has(roomId)) {
 		return rooms.get(roomId)!
 	}
