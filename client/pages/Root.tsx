@@ -2,8 +2,8 @@ import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Tldraw, createTLStore } from 'tldraw'
 
-function generateRoomId() {
-	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+function generateWhiteboardId() {
+	const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 	const part = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 	return `${part()}-${part()}-${part()}`
 }
@@ -13,7 +13,7 @@ export function Root() {
 	const [part2, setPart2] = useState('')
 	const [part3, setPart3] = useState('')
 	const [isChecking, setIsChecking] = useState(false)
-	const [roomExists, setRoomExists] = useState(false)
+	const [whiteboardExists, setWhiteboardExists] = useState(false)
 	const navigate = useNavigate()
 	const input2Ref = useRef<HTMLInputElement>(null)
 	const input3Ref = useRef<HTMLInputElement>(null)
@@ -21,45 +21,45 @@ export function Root() {
 
 	const store = createTLStore()
 
-	const checkRoomExists = async (roomId: string) => {
+	const checkWhiteboardExists = async (whiteboardId: string) => {
 		try {
-			const response = await fetch(`/api/room/${roomId}/exists`)
+			const response = await fetch(`/api/whiteboard/${whiteboardId}/exists`)
 			const data = await response.json()
-			setRoomExists(data.exists)
+			setWhiteboardExists(data.exists)
 		} catch (error) {
-			console.error('Error checking room existence:', error)
-			setRoomExists(false)
+			console.error('Error checking whiteboard existence:', error)
+			setWhiteboardExists(false)
 		} finally {
 			setIsChecking(false)
 		}
 	}
 
 	useEffect(() => {
-		const roomId = `${part1}${part2}${part3}`
-		if (roomId.length === 9) {
+		const whiteboardId = `${part1}${part2}${part3}`
+		if (whiteboardId.length === 9) {
 			setIsChecking(true)
-			setRoomExists(false)
+			setWhiteboardExists(false)
 			if (checkTimeoutRef.current) {
 				clearTimeout(checkTimeoutRef.current)
 			}
 			checkTimeoutRef.current = setTimeout(() => {
-				checkRoomExists(roomId)
+				checkWhiteboardExists(whiteboardId)
 			}, 500) // Debounce for 500ms
 		} else {
 			setIsChecking(false)
-			setRoomExists(false)
+			setWhiteboardExists(false)
 		}
 	}, [part1, part2, part3])
 
 	const handleCreate = () => {
-		const newId = generateRoomId()
+		const newId = generateWhiteboardId()
 		navigate(`/${newId}`)
 	}
 
 	const handleJoin = () => {
-		if (roomExists) {
-			const roomId = `${part1}-${part2}-${part3}`
-			navigate(`/${roomId}`)
+		if (whiteboardExists) {
+			const whiteboardId = `${part1}-${part2}-${part3}`
+			navigate(`/${whiteboardId}`)
 		}
 	}
 
@@ -93,7 +93,7 @@ export function Root() {
 					</div>
 					<div className="dialog-divider"></div>
 					<h4>Join existing Whiteboard</h4>
-					<div className="room-input-group">
+					<div className="whiteboard-input-group">
 						<input
 							type="text"
 							value={part1}
@@ -121,11 +121,11 @@ export function Root() {
 							maxLength={3}
 						/>
 					</div>
-					<div className="room-status-message">
-						{!isChecking && !roomExists && `${part1}${part2}${part3}`.length === 9 ? 'Whiteboard not found' : ''}
+					<div className="whiteboard-status-message">
+						{!isChecking && !whiteboardExists && `${part1}${part2}${part3}`.length === 9 ? 'Whiteboard not found' : ''}
 					</div>
 					<div className="dialog-buttons">
-						<button type="button" className={`join-button ${roomExists ? 'found' : ''}`} onClick={handleJoin} disabled={!roomExists}>
+						<button type="button" className={`join-button ${whiteboardExists ? 'found' : ''}`} onClick={handleJoin} disabled={!whiteboardExists}>
 							Join
 						</button>
 					</div>

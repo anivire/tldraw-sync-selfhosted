@@ -1,13 +1,16 @@
 # tldraw-sync-selfhosted
 
-A self-hosted, open-source backend for [tldraw](https://tldraw.dev) real-time collaborative drawing. This project provides a fully self-hosted alternative to the Cloudflare-based tldraw sync server, using Node.js, WebSockets, and S3-compatible storage.
+A self-hosted, open-source backend for [tldraw](https://tldraw.dev) real-time collaborative drawing. This project provides a fully self-hosted alternative to the Cloudflare-based tldraw sync server, using Node.js, WebSockets, and MongoDB for storage.
 
 ## Features
 
 - **Real-time Collaboration**: WebSocket-based synchronization for multiple users drawing simultaneously
+- **Persistent Storage**: Whiteboard snapshots stored in MongoDB with automatic recovery
 - **Asset Management**: Upload and serve images/videos with S3-compatible storage (e.g., Garage, MinIO)
+- **Connection Monitoring**: Real-time connection status with automatic reconnection
+- **Long-term Retention**: Whiteboards remain active for 24 hours of inactivity
 - **Self-Hosted**: No dependency on proprietary cloud services
-- **Scalable**: Supports multiple rooms with in-memory state management
+- **Scalable**: Supports multiple whiteboards with in-memory state management
 - **Open Source**: MIT licensed, community-driven
 
 ## Architecture
@@ -15,15 +18,17 @@ A self-hosted, open-source backend for [tldraw](https://tldraw.dev) real-time co
 This server replaces Cloudflare Workers and Durable Objects with:
 - **Express.js** for HTTP API
 - **WebSocket** for real-time sync
-- **AWS SDK** for S3-compatible storage
-- **tldraw/sync-core** for room state management
+- **MongoDB** for whiteboard state persistence
+- **AWS SDK** for S3-compatible asset storage
+- **tldraw/sync-core** for whiteboard state management
 
 ## Installation
 
 ### Prerequisites
 
 - Node.js 18+
-- An S3-compatible storage service (e.g., [Garage](https://garagehq.deuxfleurs.fr/), MinIO, or AWS S3)
+- MongoDB instance (local or cloud)
+- An S3-compatible storage service (e.g., [Garage](https://garagehq.deuxfleurs.fr/), MinIO, or AWS S3) for assets
 
 ### Setup
 
@@ -40,6 +45,8 @@ This server replaces Cloudflare Workers and Durable Objects with:
 
 3. Configure environment variables in `.env`:
    ```env
+   MONGODB_URI=mongodb://localhost:27017
+   DATABASE_NAME=tldraw
    S3_ENDPOINT=https://your-s3-endpoint
    S3_ACCESS_KEY_ID=your-access-key
    S3_SECRET_ACCESS_KEY=your-secret-key
@@ -65,7 +72,7 @@ npm run dev
 
 - Server runs on `http://localhost:3000`
 - Client runs on `http://localhost:5137`
-- Access the drawing app and create/join rooms
+- Access the drawing app and create/join whiteboards
 
 ### Production
 
@@ -86,10 +93,12 @@ Deploy the server and client separately:
 
 ### API Endpoints
 
+- `GET /api/health` - Server health check with MongoDB status
 - `POST /api/uploads/:uploadId` - Upload assets
 - `GET /api/uploads/:uploadId` - Download assets
 - `GET /api/unfurl` - URL metadata (placeholder)
-- `WebSocket /api/connect/:roomId` - Real-time sync
+- `GET /api/whiteboard/:whiteboardId/exists` - Check whiteboard existence
+- `WebSocket /api/connect/:whiteboardId` - Real-time sync
 
 ## Configuration
 
@@ -97,20 +106,55 @@ Deploy the server and client separately:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| `MONGODB_URI` | MongoDB connection string | `mongodb://localhost:27017` |
+| `DATABASE_NAME` | MongoDB database name | `tldraw` |
 | `S3_ENDPOINT` | S3-compatible endpoint URL | Required |
 | `S3_ACCESS_KEY_ID` | Access key | Required |
 | `S3_SECRET_ACCESS_KEY` | Secret key | Required |
 | `S3_BUCKET_NAME` | Bucket name | Required |
-| `S3_REGION` | Region | `garage` |
+| `S3_REGION` | Region | `us-east-1` |
 | `PORT` | Server port | `3000` |
 
 ### Storage
 
-Rooms are persisted as JSON snapshots in your S3 bucket under the `rooms/` prefix. Assets are stored under `uploads/`.
+Whiteboards are persisted as JSON snapshots in MongoDB. Assets are stored in S3-compatible storage under the `uploads/` prefix.
+
+### Connection & Reliability
+
+- **Connection Monitoring**: Real-time status indicators show MongoDB connection health
+- **Automatic Reconnection**: Server automatically reconnects to MongoDB if connection drops
+- **Graceful Degradation**: Whiteboards continue to work even when MongoDB is temporarily unavailable
+- **Long-term Retention**: Active whiteboards remain in memory for 24 hours of inactivity
+- **Data Persistence**: All changes are saved to MongoDB with 10-second throttling
 
 ## Deployment
 
-### Docker (Example)
+### Docker Compose
+
+The easiest way to run the application with MongoDB is using Docker Compose:
+
+1. Copy `.env.template` to `.env` and fill in your S3 configuration:
+   ```bash
+   cp .env.template .env
+   # Edit .env with your S3 credentials
+   ```
+
+2. Start the services:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Access the application at `http://localhost:5173`
+
+The Docker Compose setup includes:
+- **MongoDB 6.0** for whiteboard state persistence
+- **tldraw application** running in development mode
+- **Persistent volumes** for MongoDB data
+- **Network isolation** between services
+
+### Docker (Standalone)
+
+For production deployment without MongoDB:
 
 ```dockerfile
 FROM node:18-alpine
@@ -124,6 +168,27 @@ CMD ["node", "dist/server/server.js"]
 ```
 
 ### nginx Configuration
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    # Serve client
+    location / {
+        root /path/to/dist/client;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # Proxy API to server
+    location /api/ {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
 
 ```nginx
 server {

@@ -6,7 +6,7 @@ body {
 	overscroll-behavior: none;
 }
 
-.RoomWrapper {
+.WhiteboardWrapper {
 	--background: white;
 	--text: hsl(0, 0%, 20%);
 	--gray-light: #f5f5f5;
@@ -20,7 +20,7 @@ body {
 	color-scheme: light;
 }
 
-:root:has(.tl-theme__dark) .RoomWrapper {
+:root:has(.tl-theme__dark) .WhiteboardWrapper {
 	--background: black;
 	--text: hsl(0, 9%, 94%);
 	--gray-light: #333;
@@ -34,17 +34,17 @@ body {
 	color-scheme: dark;
 }
 
-.RoomWrapper {
+.WhiteboardWrapper {
 	display: flex;
 	flex-direction: column;
 	position: absolute;
 	inset: 0px;
 }
 
-.RoomWrapper-header {
+.WhiteboardWrapper-header {
 	display: flex;
 	flex-direction: row;
-	justify-content: flex-start;
+	justify-content: space-between;
 	align-items: center;
 	padding: 8px 16px;
 	gap: 16px;
@@ -54,7 +54,36 @@ body {
 	font-size: 14px;
 }
 
-.RoomWrapper-copy {
+.WhiteboardWrapper-name-group {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex: 1;
+}
+
+.WhiteboardWrapper-status {
+	font-size: 12px;
+	text-align: right;
+}
+
+.status-connected {
+	color: #4caf50;
+}
+
+.status-disconnected {
+	color: #f44336;
+	font-weight: 500;
+}
+
+.status-connected svg {
+	color: #4caf50;
+}
+
+.status-disconnected svg {
+	color: #f44336;
+}
+
+.WhiteboardWrapper-copy {
 	background: var(--black-transparent-lighter);
 	border: 1px solid var(--gray-dark);
 	border-radius: 4px;
@@ -65,11 +94,11 @@ body {
 	text-align: center;
 }
 
-.RoomWrapper-copy:has(.RoomWrapper-copied) {
+.WhiteboardWrapper-copy:has(.WhiteboardWrapper-copied) {
 	color: transparent;
 }
 
-.RoomWrapper-copied {
+.WhiteboardWrapper-copied {
 	color: var(--text);
 	position: absolute;
 	inset: 0;
@@ -78,11 +107,11 @@ body {
 	justify-content: center;
 }
 
-.RoomWrapper-copy:hover {
+.WhiteboardWrapper-copy:hover {
 	border: 1px solid var(--black-transparent-lighter);
 }
 
-.RoomWrapper-content {
+.WhiteboardWrapper-content {
 	position: relative;
 	flex: 1;
 }
@@ -189,7 +218,7 @@ body {
 	border-color: hsl(217, 89%, 61%);
 }
 
-.room-input-group {
+.whiteboard-input-group {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -197,7 +226,7 @@ body {
 	margin-bottom: 16px;
 }
 
-.room-input-group input {
+.whiteboard-input-group input {
 	width: 60px;
 	padding: 8px 12px;
 	border: 2px solid #ccc;
@@ -212,13 +241,13 @@ body {
 	box-sizing: border-box;
 }
 
-.room-input-group input:focus {
+.whiteboard-input-group input:focus {
 	outline: none;
 	border-color: hsl(217, 89%, 61%);
 	box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
 }
 
-.room-input-group span {
+.whiteboard-input-group span {
 	font-size: 18px;
 	color: var(--text);
 	font-weight: bold;
@@ -243,7 +272,7 @@ body {
 	margin: 4px 0;
 }
 
-.room-status-message {
+.whiteboard-status-message {
 	min-height: 20px;
 	font-size: 14px;
 	color: #d32f2f;
@@ -284,4 +313,113 @@ body {
 	opacity: 0.6 !important;
 	cursor: not-allowed !important;
 	box-shadow: none !important;
+}
+
+/* QR Code Button Styles */
+.WhiteboardWrapper-buttons {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.WhiteboardWrapper-qr {
+	background: var(--black-transparent-lighter);
+	border: 1px solid var(--gray-dark);
+	border-radius: 4px;
+	padding: 4px;
+	height: 24px;
+	width: 24px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.WhiteboardWrapper-qr:hover {
+	border: 1px solid var(--black-transparent-lighter);
+}
+
+.WhiteboardWrapper-qr svg {
+	width: 16px;
+	height: 16px;
+}
+
+/* QR Code Modal Styles */
+.QRCodeModal-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.QRCodeModal-content {
+	background: var(--background);
+	border: 1px solid var(--gray-dark);
+	border-radius: 8px;
+	padding: 24px;
+	max-width: 320px;
+	width: 100%;
+	box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+	text-align: center;
+}
+
+.QRCodeModal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+.QRCodeModal-header h3 {
+	margin: 0;
+	color: var(--text);
+	font-size: 18px;
+	font-weight: 600;
+}
+
+.QRCodeModal-close {
+	background: none;
+	border: none;
+	font-size: 24px;
+	cursor: pointer;
+	color: var(--text);
+	padding: 0;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.QRCodeModal-close:hover {
+	color: var(--black-transparent-dark);
+}
+
+.QRCodeModal-body img {
+	max-width: 100%;
+	height: auto;
+	margin-bottom: 16px;
+	border-radius: 4px;
+}
+
+.QRCodeModal-body p {
+	margin: 0 0 12px 0;
+	color: var(--text);
+	font-size: 14px;
+}
+
+.QRCodeModal-url {
+	background: var(--gray-light);
+	padding: 8px;
+	border-radius: 4px;
+	border: 1px solid var(--gray-dark);
+}
+
+.QRCodeModal-url small {
+	color: var(--text);
+	font-size: 12px;
+	word-break: break-all;
 }

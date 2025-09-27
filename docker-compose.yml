@@ -1,0 +1,52 @@
+services:
+  # MongoDB database
+  mongodb:
+    image: mongo:6.0
+    container_name: tldraw-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: tldraw
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - tldraw-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # tldraw application
+  tldraw:
+    build: .
+    container_name: tldraw-sync
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      # - NODE_ENV=production
+      - PORT=${PORT:-3030}
+      - SITE_URL=${SITE_URL}
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017}
+      - DATABASE_NAME=${DATABASE_NAME:-tldraw}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - S3_REGION=${S3_REGION:-garage}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - tldraw-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  tldraw-network:
+    driver: bridge
