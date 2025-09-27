@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Tldraw, createTLStore } from 'tldraw'
 
@@ -12,11 +12,44 @@ export function Root() {
 	const [part1, setPart1] = useState('')
 	const [part2, setPart2] = useState('')
 	const [part3, setPart3] = useState('')
+	const [isChecking, setIsChecking] = useState(false)
+	const [roomExists, setRoomExists] = useState(false)
 	const navigate = useNavigate()
 	const input2Ref = useRef<HTMLInputElement>(null)
 	const input3Ref = useRef<HTMLInputElement>(null)
+	const checkTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
 	const store = createTLStore()
+
+	const checkRoomExists = async (roomId: string) => {
+		try {
+			const response = await fetch(`/api/room/${roomId}/exists`)
+			const data = await response.json()
+			setRoomExists(data.exists)
+		} catch (error) {
+			console.error('Error checking room existence:', error)
+			setRoomExists(false)
+		} finally {
+			setIsChecking(false)
+		}
+	}
+
+	useEffect(() => {
+		const roomId = `${part1}${part2}${part3}`
+		if (roomId.length === 9) {
+			setIsChecking(true)
+			setRoomExists(false)
+			if (checkTimeoutRef.current) {
+				clearTimeout(checkTimeoutRef.current)
+			}
+			checkTimeoutRef.current = setTimeout(() => {
+				checkRoomExists(roomId)
+			}, 500) // Debounce for 500ms
+		} else {
+			setIsChecking(false)
+			setRoomExists(false)
+		}
+	}, [part1, part2, part3])
 
 	const handleCreate = () => {
 		const newId = generateRoomId()
@@ -24,7 +57,7 @@ export function Root() {
 	}
 
 	const handleJoin = () => {
-		if (part1.length === 3 && part2.length === 3 && part3.length === 3) {
+		if (roomExists) {
 			const roomId = `${part1}-${part2}-${part3}`
 			navigate(`/${roomId}`)
 		}
@@ -46,8 +79,6 @@ export function Root() {
 		const val = e.target.value.toUpperCase().slice(0, 3)
 		setPart3(val)
 	}
-
-	const canJoin = part1.length === 3 && part2.length === 3 && part3.length === 3
 
 	return (
 		<div style={{ position: 'relative', height: '100vh' }}>
@@ -90,15 +121,17 @@ export function Root() {
 							maxLength={3}
 						/>
 					</div>
+					<div className="room-status-message">
+						{!isChecking && !roomExists && `${part1}${part2}${part3}`.length === 9 ? 'Whiteboard not found' : ''}
+					</div>
 					<div className="dialog-buttons">
-						<button type="button" onClick={handleJoin} disabled={!canJoin}>
-							Join Whiteboard
+						<button type="button" className={`join-button ${roomExists ? 'found' : ''}`} onClick={handleJoin} disabled={!roomExists}>
+							Join
 						</button>
 					</div>
 					<div className="dialog-divider"></div>
 					<div className="dialog-disclaimer">
-						<p>1. This is a self-hosted whiteboard powered by tldraw, intended for educational and internal use only.</p>
-						<p>2. Data persistence is not guaranteed.</p>
+						<p>This self-hosted whiteboard, powered by tldraw, is intended for educational and internal use only. Data persistence is not guaranteed.</p>
 					</div>
 				</div>
 			</div>

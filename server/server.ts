@@ -177,6 +177,20 @@ app.get('/api/uploads/:uploadId', async (req, res) => {
 	}
 })
 
+// Check room existence
+app.get('/api/room/:roomId/exists', async (req, res) => {
+	const roomId = req.params.roomId
+	try {
+		await s3.send(new HeadObjectCommand({
+			Bucket: S3_BUCKET_NAME,
+			Key: `rooms/${roomId}`,
+		}))
+		res.json({ exists: true })
+	} catch (e) {
+		res.json({ exists: false })
+	}
+})
+
 // Unfurl (placeholder)
 app.get('/api/unfurl', (_req, res) => {
 	// Implement unfurl logic here, e.g., using a library

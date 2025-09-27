@@ -208,6 +208,8 @@ body {
 	color: black;
 	text-transform: uppercase;
 	transition: border-color 0.2s ease;
+	height: 40px;
+	box-sizing: border-box;
 }
 
 .room-input-group input:focus {
@@ -220,6 +222,10 @@ body {
 	font-size: 18px;
 	color: var(--text);
 	font-weight: bold;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .dialog-disclaimer {
@@ -235,4 +241,47 @@ body {
 
 .dialog-disclaimer p {
 	margin: 4px 0;
+}
+
+.room-status-message {
+	min-height: 20px;
+	font-size: 14px;
+	color: #d32f2f;
+	text-align: center;
+	margin: 8px 0;
+}
+
+.dialog .join-button {
+	background: #ccc !important;
+	color: #333 !important;
+	border: 2px solid #888 !important;
+	border-radius: 8px !important;
+	padding: 8px 16px !important;
+	transition: all 0.2s ease;
+	font-size: 14px !important;
+	font-weight: 500 !important;
+	cursor: pointer !important;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+	-webkit-appearance: none !important;
+	-moz-appearance: none !important;
+	appearance: none !important;
+}
+
+.dialog .join-button.found {
+	background: #90caf9 !important;
+	color: #000 !important;
+	border-color: #64b5f6 !important;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15) !important;
+}
+
+.dialog .join-button.found:hover {
+	background: #2196f3 !important;
+	border-color: #1976d2 !important;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+}
+
+.dialog .join-button:disabled {
+	opacity: 0.6 !important;
+	cursor: not-allowed !important;
+	box-shadow: none !important;
 }
