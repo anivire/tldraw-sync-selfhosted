@@ -5,6 +5,8 @@ import './index.css'
 import { Room } from './pages/Room'
 import { Root } from './pages/Root'
 
+document.title = import.meta.env.VITE_APP_NAME || 'tldraw sync'
+
 const router = createBrowserRouter([
 	{
 		path: '/',
