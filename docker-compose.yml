@@ -26,7 +26,7 @@ services:
     container_name: tldraw-sync
     restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "10370:5173"
     environment:
       # - NODE_ENV=production
       - PORT=${PORT:-3030}
