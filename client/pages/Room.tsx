@@ -16,12 +16,24 @@ export function Room() {
 		assets: multiplayerAssetStore,
 	})
 
+	// Read license key from Vite environment variable VITE_TLDRAW_LICENSE.
+	// The actual key should be set in a local .env file (added to .gitignore) or your deploy environment.
+	const licenseKey = (import.meta as any).env?.VITE_TLDRAW_LICENSE as string | undefined
+
+	if (!licenseKey && process.env.NODE_ENV === 'production') {
+		// In production it's helpful to know if the license key is missing.
+		// We don't throw — the tldraw component will still render but some features may be restricted.
+		// eslint-disable-next-line no-console
+		console.warn('Tldraw license key is not set. Set VITE_TLDRAW_LICENSE in your environment to enable licensed features.')
+	}
+
 	return (
 		<WhiteboardWrapper whiteboardId={whiteboardId}>
 			<Tldraw
 				// we can pass the connected store into the Tldraw component which will handle
 				// loading states & enable multiplayer UX like cursors & a presence menu
 				store={store}
+				licenseKey={licenseKey}
 				deepLinks
 				onMount={(editor) => {
 					// when the editor is ready, we need to register our bookmark unfurling service

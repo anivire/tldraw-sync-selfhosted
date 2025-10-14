@@ -1,1 +1,11 @@
 /// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+	readonly VITE_APP_NAME?: string
+	readonly VITE_TLDRAW_LICENSE?: string
+	// add other VITE_ envs here as needed
+}
+
+interface ImportMeta {
+	readonly env: ImportMetaEnv
+}

@@ -232,5 +232,22 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 - Built with [tldraw](https://tldraw.dev), [Express.js](https://expressjs.com/), and other open-source tools
 
 ## Disclaimer
+## tldraw License Key
+
+If you obtained a commercial or trial license for tldraw you can provide it to the client using an environment variable so the key is never committed to git.
+
+1. Copy the example file at the repository root:
+
+```bash
+cp .env.example .env
+# Edit .env and set VITE_TLDRAW_LICENSE to your license key
+```
+
+2. The project already lists `.env` in `.gitignore`, so your local `.env` will not be committed. Vite exposes variables prefixed with `VITE_` to the client bundle. This project reads `VITE_TLDRAW_LICENSE` and passes it to the `<Tldraw />` component as `licenseKey`.
+
+3. For production deployments, set the environment variable in your CI/CD or hosting provider (don't commit keys into source).
+
+If the license key is missing, the app will still run but licensed features may be disabled.
+
 
 This is a community-maintained, self-hosted version of tldraw sync. Not affiliated with tldraw GmbH. Use at your own risk.
