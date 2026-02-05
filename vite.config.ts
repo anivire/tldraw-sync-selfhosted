@@ -8,7 +8,7 @@ export default defineConfig(() => {
 		server: {
 			host: true, // Allow external access
 			allowedHosts: [
-				'draw.rccn.dev',
+				'tldraw.anivire.xyz',
 				'localhost',
 				'127.0.0.1',
 				'::1'
