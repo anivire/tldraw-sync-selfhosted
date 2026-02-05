@@ -1,31 +1,47 @@
-import { useRef, useState, useEffect } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Tldraw, createTLStore } from 'tldraw'
 
 function generateWhiteboardId() {
 	const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-	const part = () => Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
+	const part = () =>
+		Array.from({ length: 3 }, () =>
+			chars[Math.floor(Math.random() * chars.length)],
+		).join('')
 	return `${part()}-${part()}-${part()}`
 }
 
-export function Root() {
-	const [part1, setPart1] = useState('')
-	const [part2, setPart2] = useState('')
-	const [part3, setPart3] = useState('')
-	const [isChecking, setIsChecking] = useState(false)
-	const [whiteboardExists, setWhiteboardExists] = useState(false)
-	const navigate = useNavigate()
-	const input2Ref = useRef<HTMLInputElement>(null)
-	const input3Ref = useRef<HTMLInputElement>(null)
-	const checkTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+const PART_LENGTH = 3
+const FULL_ID_LENGTH = 11 // XXX-YYY-ZZZ
 
+export function Root() {
+	const navigate = useNavigate()
 	const store = createTLStore()
 
-	const checkWhiteboardExists = async (whiteboardId: string) => {
+	const [parts, setParts] = useState(['', '', ''])
+	const [isChecking, setIsChecking] = useState(false)
+	const [whiteboardExists, setWhiteboardExists] = useState(false)
+
+	const inputRefs = [
+		useRef<HTMLInputElement>(null),
+		useRef<HTMLInputElement>(null),
+		useRef<HTMLInputElement>(null),
+	]
+
+	const checkTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+	const whiteboardId = useMemo(
+		() => parts.join('-'),
+		[parts],
+	)
+
+	const isComplete = parts.every((p) => p.length === PART_LENGTH)
+
+	const checkWhiteboardExists = async (id: string) => {
 		try {
-			const response = await fetch(`/api/whiteboard/${whiteboardId}/exists`)
+			const response = await fetch(`/api/whiteboard/${id}/exists`)
 			const data = await response.json()
-			setWhiteboardExists(data.exists)
+			setWhiteboardExists(Boolean(data.exists))
 		} catch (error) {
 			console.error('Error checking whiteboard existence:', error)
 			setWhiteboardExists(false)
@@ -35,103 +51,109 @@ export function Root() {
 	}
 
 	useEffect(() => {
-		const whiteboardId = `${part1}-${part2}-${part3}`
-		if (whiteboardId.length === 11) { // 9 chars + 2 dashes
-			setIsChecking(true)
+		if (whiteboardId.length !== FULL_ID_LENGTH) {
+			setIsChecking(false)
 			setWhiteboardExists(false)
+			return
+		}
+
+		setIsChecking(true)
+		setWhiteboardExists(false)
+
+		if (checkTimeoutRef.current) {
+			clearTimeout(checkTimeoutRef.current)
+		}
+
+		checkTimeoutRef.current = setTimeout(() => {
+			checkWhiteboardExists(whiteboardId)
+		}, 500)
+
+		return () => {
 			if (checkTimeoutRef.current) {
 				clearTimeout(checkTimeoutRef.current)
 			}
-			checkTimeoutRef.current = setTimeout(() => {
-				checkWhiteboardExists(whiteboardId)
-			}, 500) // Debounce for 500ms
-		} else {
-			setIsChecking(false)
-			setWhiteboardExists(false)
 		}
-	}, [part1, part2, part3])
+	}, [whiteboardId])
 
 	const handleCreate = () => {
-		const newId = generateWhiteboardId()
-		navigate(`/${newId}`)
+		navigate(`/${generateWhiteboardId()}`)
 	}
 
 	const handleJoin = () => {
-		if (whiteboardExists) {
-			const whiteboardId = `${part1}-${part2}-${part3}`
-			navigate(`/${whiteboardId}`)
+		if (!whiteboardExists) return
+		navigate(`/${whiteboardId}`)
+	}
+
+	const handleInputChange =
+		(index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
+			const value = e.target.value.toUpperCase().slice(0, PART_LENGTH)
+
+			setParts((prev) => {
+				const next = [...prev]
+				next[index] = value
+				return next
+			})
+
+			if (value.length === PART_LENGTH) {
+				inputRefs[index + 1]?.current?.focus()
+			}
 		}
-	}
-
-	const handleInput1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const val = e.target.value.toUpperCase().slice(0, 3)
-		setPart1(val)
-		if (val.length === 3) input2Ref.current?.focus()
-	}
-
-	const handleInput2Change = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const val = e.target.value.toUpperCase().slice(0, 3)
-		setPart2(val)
-		if (val.length === 3) input3Ref.current?.focus()
-	}
-
-	const handleInput3Change = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const val = e.target.value.toUpperCase().slice(0, 3)
-		setPart3(val)
-	}
 
 	return (
 		<div style={{ position: 'relative', height: '100vh' }}>
 			<Tldraw store={store} />
+
 			<div className="dialog-overlay">
 				<div className="dialog">
-					<h2>Raccoon Whiteboard</h2>
 					<div className="dialog-create-section">
-						<button type="button" className="primary" onClick={handleCreate}>
+						<button
+							type="button"
+							className="primary"
+							onClick={handleCreate}
+						>
 							Start Drawing
 						</button>
 					</div>
-					<div className="dialog-divider"></div>
+
+					<div className="dialog-divider" />
+
 					<h4>Join existing Whiteboard</h4>
+
 					<div className="whiteboard-input-group">
-						<input
-							type="text"
-							value={part1}
-							onChange={handleInput1Change}
-							placeholder="ABC"
-							maxLength={3}
-							autoFocus
-						/>
-						<span>-</span>
-						<input
-							type="text"
-							ref={input2Ref}
-							value={part2}
-							onChange={handleInput2Change}
-							placeholder="DEF"
-							maxLength={3}
-						/>
-						<span>-</span>
-						<input
-							type="text"
-							ref={input3Ref}
-							value={part3}
-							onChange={handleInput3Change}
-							placeholder="XYZ"
-							maxLength={3}
-						/>
+						{parts.map((value, index) => (
+							<>
+								<input
+									key={index}
+									ref={inputRefs[index]}
+									type="text"
+									value={value}
+									onChange={handleInputChange(index)}
+									placeholder="ABC"
+									maxLength={PART_LENGTH}
+									autoFocus={index === 0}
+								/>
+								{index < 2 && <span>-</span>}
+							</>
+						))}
 					</div>
-					<div className="whiteboard-status-message">
-						{!isChecking && !whiteboardExists && `${part1}${part2}${part3}`.length === 9 ? 'Whiteboard not found' : ''}
-					</div>
+
+					{isComplete && !isChecking && !whiteboardExists && (
+						<div className="whiteboard-status-message">
+							Whiteboard not found
+						</div>
+					)}
+
 					<div className="dialog-buttons">
-						<button type="button" className={`join-button ${whiteboardExists ? 'found' : ''}`} onClick={handleJoin} disabled={!whiteboardExists}>
+						<button
+							type="button"
+							className={`join-button ${
+								whiteboardExists ? 'found' : ''
+							}`}
+							onClick={handleJoin}
+							disabled={!whiteboardExists}
+						>
 							Join
 						</button>
-					</div>
-					<div className="dialog-divider"></div>
-					<div className="dialog-disclaimer">
-						<p>This self-hosted whiteboard, powered by tldraw, is intended for educational and internal use only. Data persistence is not guaranteed.</p>
 					</div>
 				</div>
 			</div>

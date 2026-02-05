@@ -6,6 +6,12 @@ body {
 	overscroll-behavior: none;
 }
 
+/* God, forgive me for this */
+.tl-watermark_SEE-LICENSE {
+  display: none !important;
+}
+
+
 .WhiteboardWrapper {
 	--background: white;
 	--text: hsl(0, 0%, 20%);
