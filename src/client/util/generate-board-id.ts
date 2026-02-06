@@ -19,3 +19,4 @@ export function slugify(input: string) {
 }
 
 export const BOARD_ID_REGEX = /^[a-z0-9-]{3,50}$/;
+export const LEGACY_BOARD_ID_REGEX = /^[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{3}$/;

@@ -15,7 +15,7 @@ services:
     networks:
       - tldraw-network
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,7 +26,7 @@ services:
     container_name: tldraw-sync
     restart: unless-stopped
     ports:
-      - "10370:5173"
+      - '10370:5173'
     environment:
       # - NODE_ENV=production
       - PORT=${PORT:-3030}

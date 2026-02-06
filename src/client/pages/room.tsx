@@ -66,14 +66,13 @@ function WhiteboardWrapper({
     return () => clearTimeout(timeout);
   }, [didCopy]);
 
-  // Check connection status
   useEffect(() => {
     const checkConnection = async () => {
       try {
         const response = await fetch('/api/health');
         const data = await response.json();
         setIsConnected(data.mongodb === 'connected');
-      } catch (error) {
+      } catch {
         setIsConnected(false);
       }
     };
@@ -95,22 +94,17 @@ function WhiteboardWrapper({
   };
 
   return (
-    <>
-      <QRCodeModal
-        show={showQRModal}
-        onClose={() => setShowQRModal(false)}
-        qrCodeData={qrCodeData}
-      />
+    <div className="relative h-screen w-screen overflow-hidden">
+      <div className="absolute inset-0">{children}</div>
 
-      <header className="absolute right-2 bottom-2 flex w-fit items-center justify-between gap-2">
+      <header className="pointer-events-auto absolute right-2 bottom-2 z-20 flex w-fit items-center gap-2">
         <div className="flex h-9 items-center gap-1.5 rounded-xl border border-stone-200 bg-white px-3">
-          <div
-            className={`flex flex-row items-center gap-1 ${!isConnected && 'pr-1'}`}
-          >
+          <div className={`flex items-center gap-1 ${!isConnected && 'pr-1'}`}>
             <ConnectionIcon
-              className={`size-5 ${isConnected ? 'text-green-500' : 'text-red-500'}`}
+              className={`size-5 ${
+                isConnected ? 'text-green-500' : 'text-red-500'
+              }`}
             />
-
             {!isConnected && <p className="text-sm text-red-500">Offline</p>}
           </div>
 
@@ -139,8 +133,13 @@ function WhiteboardWrapper({
         </div>
       </header>
 
-      <div>{children}</div>
-    </>
+      {/* MODAL */}
+      <QRCodeModal
+        show={showQRModal}
+        onClose={() => setShowQRModal(false)}
+        qrCodeData={qrCodeData}
+      />
+    </div>
   );
 }
 
