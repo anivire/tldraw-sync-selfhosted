@@ -70,7 +70,7 @@ export function Sidebar() {
   };
 
   return (
-    <section className="flex h-full w-full max-w-sm flex-col items-center justify-center gap-5 border-r border-stone-100 bg-white p-6">
+    <section className="z-10 flex h-full w-full max-w-lg flex-col items-center justify-center gap-5 border-r border-stone-100 bg-white p-6">
       <div className="flex items-center gap-2 pb-8">
         <TldrawIcon className="text-3xl" />
         <h1 className="text-2xl font-black">tldraw</h1>
