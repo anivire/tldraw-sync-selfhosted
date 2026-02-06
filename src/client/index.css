@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;700&display=swap');
+@import url('tldraw/tldraw.css');
+@import 'tailwindcss';
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    overscroll-behavior: none;
+    scroll-behavior: smooth;
+  }
+}
+
+/* God please forgive me for this */
+.tl-watermark_SEE-LICENSE {
+  display: none !important;
+}

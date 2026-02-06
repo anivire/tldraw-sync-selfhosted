@@ -1,13 +1,15 @@
 import react from '@vitejs/plugin-react-swc'
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
 	return {
-		plugins: [react()],
+		plugins: [react(), tailwindcss()],
 		server: {
-			host: true, // Allow external access
+			host: true,
 			allowedHosts: [
+        // pass your domain
 				'tldraw.anivire.xyz',
 				'localhost',
 				'127.0.0.1',
