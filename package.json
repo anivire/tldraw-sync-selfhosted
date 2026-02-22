@@ -17,9 +17,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.896.0",
     "@tailwindcss/vite": "^4.1.18",
-    "@tldraw/sync": "^4.4.0",
-    "@tldraw/sync-core": "^4.4.0",
-    "@tldraw/tlschema": "^4.4.0",
+    "@tldraw/sync": "^4.3.1",
+    "@tldraw/sync-core": "^4.3.1",
+    "@tldraw/tlschema": "^4.3.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "express": "^4.21.2",
